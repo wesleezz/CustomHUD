@@ -65,7 +65,7 @@ public abstract class MinecraftClientMixin {
         CustomHud.resourceTriggeredReload();
     }
 
-    @WrapOperation(method = "runTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/DebugScreenOverlay;showProfilerChart()Z"))
+    @WrapOperation(method = "run", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/DebugScreenOverlay;showProfilerChart()Z"))
     public boolean activateProfiler(DebugScreenOverlay instance, Operation<Boolean> original) {
         if (ComplexData.refreshTimings) {
             ComplexData.refreshTimings = false;
