@@ -6,10 +6,10 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.minenash.customhud.ProfileManager;
 import com.minenash.customhud.data.Crosshairs;
 import com.minenash.customhud.data.Profile;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.hud.InGameHud;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.GameRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -19,24 +19,24 @@ import static com.minenash.customhud.CustomHud.CLIENT;
 public class GameRendererMixin {
 
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/InGameHud;render(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/client/render/RenderTickCounter;)V"))
-    public void changeHudGuiScale(InGameHud instance, DrawContext context, RenderTickCounter tickCounter, Operation<Void> original) {
+    public void changeHudGuiScale(Gui instance, GuiGraphicsExtractor context, DeltaTracker tickCounter, Operation<Void> original) {
         Profile p = ProfileManager.getActive();
         if (p == null || p.baseTheme.hudScale == null) {
             original.call(instance, context, tickCounter);
             return;
         }
 
-        int originalScale = CLIENT.getWindow().getScaleFactor();
+        int originalScale = CLIENT.getWindow().getGuiScale();
         int target = p.baseTheme.getTargetGuiScale();
         float scale = (float) (target/originalScale);
-        CLIENT.getWindow().setScaleFactor(target);
+        CLIENT.getWindow().setGuiScale(target);
 
-        context.getMatrices().pushMatrix();
-        context.getMatrices().scale(scale, scale);
+        context.pose().pushMatrix();
+        context.pose().scale(scale, scale);
         original.call(instance, context, tickCounter);
-        context.getMatrices().popMatrix();
+        context.pose().popMatrix();
 
-        CLIENT.getWindow().setScaleFactor(originalScale);
+        CLIENT.getWindow().setGuiScale(originalScale);
 
     }
 

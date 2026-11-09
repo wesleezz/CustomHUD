@@ -9,13 +9,6 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.DynamicUniforms;
-import net.minecraft.client.gl.Framebuffer;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.Camera;
-import net.minecraft.util.math.MathHelper;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
@@ -23,6 +16,9 @@ import org.joml.Vector4f;
 
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
+import net.minecraft.client.Camera;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.util.Mth;
 
 import static com.minenash.customhud.CustomHud.CLIENT;
 
@@ -37,44 +33,24 @@ public class DebugGizmoElement extends IconElement {
     }
 
     @Override
-    public void render(DrawContext context, RenderPiece piece) {
-        float scale = -1 * this.scale * 10/18f;
-        Camera camera = CLIENT.gameRenderer.getCamera();
-        Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
-        matrix4fStack.pushMatrix();
-//        matrix4fStack.scale(profileScale,profileScale,1);
+    public void render(GuiGraphicsExtractor context, RenderPiece piece) {
+        Camera camera = CLIENT.gameRenderer.mainCamera();
+        float yaw = (float) Math.toRadians(camera.yRot());
+        float pitch = (float) Math.toRadians(camera.xRot());
+        int cx = (int) (piece.x + shiftX + size);
+        int cy = (int) (piece.y + shiftY + size);
+        int len = (int) size;
+        int xX = (int) (cx + len * Math.cos(yaw));
+        int xY = (int) (cy + len * Math.sin(pitch) * Math.sin(yaw));
+        int yX = cx;
+        int yY = (int) (cy - len * Math.cos(pitch));
+        int zX = (int) (cx - len * Math.sin(yaw));
+        int zY = (int) (cy + len * Math.sin(pitch) * Math.cos(yaw));
 
-        float yaw = MathHelper.wrapDegrees(camera.getYaw());
-        float pitch = MathHelper.wrapDegrees(camera.getPitch());
-
-        float x_offset = size / 2;
-        float y_offset = (pitch + 90) / 180 * size * 2 - 2;
-        if (y_offset > size) y_offset = size;
-
-        if (yaw > 90) {
-            x_offset += size - (((yaw - 90) / 90) * size);
-            y_offset += size * (-pitch / 90);
-        }
-        else if (yaw > 0) {
-            x_offset += size;
-            y_offset += (yaw / 90) * size * (-pitch / 90);
-        }
-        else if (yaw < -90) {
-            x_offset += 0;
-            y_offset += ((yaw + 90)/90) * -size * (-pitch / 90);
-        }
-        else {
-            x_offset += size + ((yaw) / 90) * size;
-            y_offset += 0;
-        }
-
-        matrix4fStack.translate(piece.x + shiftX + x_offset, piece.y + shiftY + y_offset + (size/2), 100);
-//        matrix4fStack.mul(context.getMatrices().peek().getPositionMatrix());
-        matrix4fStack.rotateX(-camera.getPitch() * (float) (Math.PI / 180.0));
-        matrix4fStack.rotateY(camera.getYaw() * (float) (Math.PI / 180.0));
-        matrix4fStack.scale(scale, scale, scale);
-        CLIENT.getDebugHud().renderDebugCrosshair(camera);
-        matrix4fStack.popMatrix();
+        context.fill(cx - 1, cy - 1, cx + 1, cy + 1, 0xFFFFFFFF);
+        context.fill(Math.min(cx, xX), Math.min(cy, xY), Math.max(cx, xX) + 1, Math.max(cy, xY) + 1, 0xFFFF0000);
+        context.fill(Math.min(cx, yX), Math.min(cy, yY), Math.max(cx, yX) + 1, Math.max(cy, yY) + 1, 0xFF00FF00);
+        context.fill(Math.min(cx, zX), Math.min(cy, zY), Math.max(cx, zX) + 1, Math.max(cy, zY) + 1, 0xFF0000FF);
     }
 
 
