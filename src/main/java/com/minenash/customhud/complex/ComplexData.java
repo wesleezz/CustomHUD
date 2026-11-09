@@ -64,6 +64,7 @@ public class ComplexData {
     public static String[] sounds = null;
     public static String[] clientChunkCache = null;
     public static int timeOfDay = -1;
+    public static final java.util.Map<net.minecraft.server.packs.repository.Pack, net.minecraft.util.InclusiveRange<net.minecraft.server.packs.metadata.pack.PackFormat>> PACK_RANGES = new java.util.WeakHashMap<>();
     public static double x1 = 0, y1 = 0, z1 = 0, velocityXZ = 0, velocityY = 0, velocityXYZ = 0;
 
     private static final Minecraft client = Minecraft.getInstance();

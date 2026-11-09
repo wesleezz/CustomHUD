@@ -2,6 +2,7 @@ package com.minenash.customhud.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.minenash.customhud.complex.ComplexData;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.PackType;
@@ -15,13 +16,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.Map;
-import java.util.WeakHashMap;
-
 @Mixin(Pack.class)
 public class ResourcePackProfileMixin {
 
-    public static final Map<Pack, InclusiveRange<PackFormat>> PACK_RANGES = new WeakHashMap<>();
     @Unique private static InclusiveRange<PackFormat> temp = null;
 
     @WrapOperation(method = "readPackMetadata", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/packs/metadata/pack/PackMetadataSection;supportedFormats()Lnet/minecraft/util/InclusiveRange;"))
@@ -33,6 +30,6 @@ public class ResourcePackProfileMixin {
     private static void setPackVersionPart2(PackLocationInfo info, Pack.ResourcesSupplier resources, PackType type, PackSelectionConfig config, CallbackInfoReturnable<Pack> cir) {
         Pack pack = cir.getReturnValue();
         if (pack != null && temp != null)
-            PACK_RANGES.put(pack, temp);
+            ComplexData.PACK_RANGES.put(pack, temp);
     }
 }

@@ -446,7 +446,7 @@ public class AttributeFunctions {
     public static final Function<Pack,Number> MAX_PACK_VERSION_MAJOR = (pack) -> range(pack).maxInclusive().major();
     public static final Function<Pack,Number> MAX_PACK_VERSION_MINOR = (pack) -> range(pack).maxInclusive().minor();
 
-    public static final InclusiveRange<PackFormat> range(Pack pack) { InclusiveRange<PackFormat> r = com.minenash.customhud.mixin.ResourcePackProfileMixin.PACK_RANGES.get(pack); return r != null ? r : new InclusiveRange<>(PackFormat.of(0), PackFormat.of(0)); }
+    public static final InclusiveRange<PackFormat> range(Pack pack) { InclusiveRange<PackFormat> r = ComplexData.PACK_RANGES.get(pack); return r != null ? r : new InclusiveRange<>(PackFormat.of(0), PackFormat.of(0)); }
 
     public static final Function<Pack,Boolean> PACK_ALWAYS_ENABLED = (pack) -> pack.isRequired();
     public static final Function<Pack,Boolean> PACK_IS_PINNED = (pack) -> pack.isFixedPosition();
