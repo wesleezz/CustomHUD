@@ -18,11 +18,11 @@ import net.minecraft.world.item.JukeboxSong;
 @Mixin(LevelEventHandler.class)
 public class WorldEventHandlerMixin {
 
-    @Shadow @Final private Map<BlockPos, SoundInstance> playingSongs;
+    @Shadow @Final private Map<BlockPos, SoundInstance> playingJukeboxSongs;
 
     @Inject(method = "playJukeboxSong", at = @At("TAIL"))
     private void getRecord(Holder<JukeboxSong> song, BlockPos jukeboxPos, CallbackInfo ci) {
-        MusicAndRecordTracker.setRecord(song, playingSongs.get(jukeboxPos), jukeboxPos);
+        MusicAndRecordTracker.setRecord(song, playingJukeboxSongs.get(jukeboxPos), jukeboxPos);
     }
 
 }

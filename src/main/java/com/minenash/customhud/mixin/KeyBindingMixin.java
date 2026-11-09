@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(KeyMapping.class)
 public class KeyBindingMixin {
 
-    @Inject(method = "onKeyPressed", at = @At("TAIL"))
+    @Inject(method = "click", at = @At("TAIL"))
     private static void checkKeybinds(InputConstants.Key key, CallbackInfo ci) {
         var input = new KeyEvent(key.getValue(), key.getValue(), 0);
         for (Profile p : ProfileManager.getProfiles()) {

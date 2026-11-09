@@ -1,6 +1,5 @@
 package com.minenash.customhud.mixin;
 
-
 import com.minenash.customhud.complex.ComplexData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
@@ -13,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Player.class)
 public class PlayerEntityMixin {
 
-    @Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;resetLastAttackedTicks()V"))
+    @Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;resetAttackStrengthTicker()V"))
     private void logAttack(Entity target, CallbackInfo ci) {
         if (((Object)this) == Minecraft.getInstance().player && ComplexData.targetEntityHitPos != null) {
             ComplexData.lastHitEntity = target;

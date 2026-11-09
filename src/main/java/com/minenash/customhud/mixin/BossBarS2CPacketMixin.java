@@ -14,13 +14,13 @@ import net.minecraft.world.BossEvent;
 @Mixin(ClientboundBossEventPacket.class)
 public class BossBarS2CPacketMixin {
 
-    @Inject(method = "add", at = @At("HEAD"))
+    @Inject(method = "createAddPacket", at = @At("HEAD"))
     private static void addBossBar(BossEvent bar, CallbackInfoReturnable<ClientboundBossEventPacket> cir) {
         if (!(bar instanceof CustomBossEvent))
             ComplexData.bossbars.put(bar.getId(), bar);
     }
 
-    @Inject(method = "remove", at = @At("HEAD"))
+    @Inject(method = "createRemovePacket", at = @At("HEAD"))
     private static void removeBossBar(UUID uuid, CallbackInfoReturnable<ClientboundBossEventPacket> cir) {
         ComplexData.bossbars.remove(uuid);
     }

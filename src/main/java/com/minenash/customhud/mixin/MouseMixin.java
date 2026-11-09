@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(MouseHandler.class)
 public class MouseMixin {
 
-    @Inject(method = "onMouseButton", at = @At("HEAD"))
+    @Inject(method = "onButton", at = @At("HEAD"))
     public void setIsMouseKeyDown(long window, MouseButtonInfo input, int action, CallbackInfo ci) {
         if (action == GLFW.GLFW_PRESS)
             CustomHud.IS_MOUSE_DOWN.put(input.button(), true);

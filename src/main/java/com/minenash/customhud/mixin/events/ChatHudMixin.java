@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ChatComponent.class)
 public class ChatHudMixin {
 
-    @Inject(method = "addMessage(Lnet/minecraft/client/gui/hud/ChatHudLine;)V", at = @At("HEAD"))
+    @Inject(method = "addMessageToQueue", at = @At("HEAD"))
     public void test(GuiMessage message, CallbackInfo ci) {
         var profile = ProfileManager.getActive();
         if (profile != null) {

@@ -12,8 +12,8 @@ import net.minecraft.sounds.SoundSource;
 @Mixin(Options.class)
 public interface GameOptionsAccessor {
 
-    @Invoker("accept") void invokeAccept(Options.FieldAccess visitor);
+    @Invoker("processOptions") void invokeAccept(Options.FieldAccess visitor);
 
-    @Accessor Map<SoundSource, OptionInstance<Double>> getSoundVolumeLevels();
+    @Accessor("soundSourceVolumes") Map<SoundSource, OptionInstance<Double>> getSoundVolumeLevels();
 
 }

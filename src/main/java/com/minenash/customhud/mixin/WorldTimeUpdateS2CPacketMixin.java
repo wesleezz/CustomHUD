@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ClientboundSetTimePacket.class)
 public class WorldTimeUpdateS2CPacketMixin {
 
-    @Inject(method = "apply(Lnet/minecraft/network/listener/ClientPlayPacketListener;)V", at = @At("HEAD"))
+    @Inject(method = "handle(Lnet/minecraft/network/protocol/game/ClientGamePacketListener;)V", at = @At("HEAD"))
     public void recordTick(ClientGamePacketListener clientPlayPacketListener, CallbackInfo ci) {
         if (RenderSystem.isOnRenderThread())
             EstimatedTick.record();

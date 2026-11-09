@@ -1,6 +1,6 @@
 package com.minenash.customhud.complex;
 
-import com.minenash.customhud.mixin.music.MinecraftClientAccess;
+
 import com.minenash.customhud.mixin.music.MusicTrackerAccess;
 import org.apache.commons.lang3.text.WordUtils;
 
@@ -78,7 +78,7 @@ public class MusicAndRecordTracker {
         isRecordPlaying = !records.isEmpty();
 
 
-        SoundInstance music = ((MusicTrackerAccess)((MinecraftClientAccess)client).getMusicTracker()).getCurrent();
+        SoundInstance music = ((MusicTrackerAccess)client.getMusicManager()).getCurrent();
         isMusicPlaying =  client.getSoundManager().isActive(music);
         if (music != null) {
             musicId = music.getSound().getLocation();

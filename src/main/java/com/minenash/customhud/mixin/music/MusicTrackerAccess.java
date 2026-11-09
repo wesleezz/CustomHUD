@@ -8,6 +8,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(MusicManager.class)
 public interface MusicTrackerAccess {
 
-    @Accessor SoundInstance getCurrent();
+    @Accessor("currentMusic") SoundInstance getCurrent();
 
 }

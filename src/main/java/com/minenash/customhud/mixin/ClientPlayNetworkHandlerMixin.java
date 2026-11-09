@@ -19,12 +19,12 @@ import static com.minenash.customhud.CustomHud.CLIENT;
 @Mixin(ClientPacketListener.class)
 public class ClientPlayNetworkHandlerMixin {
 
-    @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/DebugHud;shouldShowPacketSizeAndPingCharts()Z"))
+    @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/DebugScreenOverlay;showNetworkCharts()Z"))
     private boolean pingForMetricVariables(DebugScreenOverlay hud) {
         return hud.showNetworkCharts() || (ProfileManager.getActive() != null && ProfileManager.getActive().enabled.pingMetrics);
     }
 
-    @Inject(method = "onSetTradeOffers", at = @At("HEAD"))
+    @Inject(method = "handleMerchantOffers", at = @At("HEAD"))
     public void getTradeOffer(ClientboundMerchantOffersPacket packet, CallbackInfo ci) {
         if (ComplexData.fakeVillagerInteract > 0) {
             ComplexData.fakeVillagerInteract--;
@@ -33,7 +33,7 @@ public class ClientPlayNetworkHandlerMixin {
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "onOpenScreen", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "handleOpenScreen", cancellable = true)
     public void onOpenScreen(ClientboundOpenScreenPacket packet, CallbackInfo ci) {
         if (packet.getType() == MenuType.MERCHANT && ComplexData.fakeVillagerInteract > 0) {
             CLIENT.getConnection().send(new ServerboundContainerClosePacket(packet.getContainerId()));
