@@ -50,6 +50,6 @@ public class SubtitleTracker implements SoundEventListener {
 
     public void tick() {
         double d = CLIENT.options.notificationDisplayTime().get();
-        this.entries.removeIf( e -> AttributeFunctions.sound(e).time + 3000.0 * d <= Util.getMillis());
+        this.entries.removeIf( e -> AttributeFunctions.sound(e).time() + 3000.0 * d <= Util.getMillis());
     }
 }

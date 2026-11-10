@@ -11,11 +11,6 @@ import com.minenash.customhud.gui.NewConfigScreen;
 import com.minenash.customhud.gui.TogglesScreen;
 import com.minenash.customhud.render.CustomHudRenderer3;
 import com.mojang.blaze3d.platform.InputConstants;
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -24,6 +19,17 @@ import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.neoforge.common.NeoForge;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFW;
@@ -34,17 +40,17 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class CustomHud implements ModInitializer {
+@Mod("custom_hud")
+public class CustomHud {
 
-	//Debug: LD_PRELOAD=/home/jakob/Programs/renderdoc_1.25/lib/librenderdoc.so
-	public static final Minecraft CLIENT = Minecraft.getInstance();
+	public static Minecraft CLIENT = Minecraft.getInstance();
 	public static final Logger LOGGER = LogManager.getLogger("CustomHud");
 	public static boolean MODMENU_INSTALLED = false;
 
 	public static boolean DEBUG_MODE = false;
 
-	public static final Path CONFIG_FOLDER = FabricLoader.getInstance().getConfigDir().resolve("custom-hud");
-	public static final Path PROFILE_FOLDER = FabricLoader.getInstance().getConfigDir().resolve("custom-hud/profiles");
+	public static final Path CONFIG_FOLDER = FMLPaths.CONFIGDIR.get().resolve("custom-hud");
+	public static final Path PROFILE_FOLDER = FMLPaths.CONFIGDIR.get().resolve("custom-hud/profiles");
 	public static WatchService profileWatcher;
 
 	public static final KeyMapping.Category MAIN_KB_CAT = KeyMapping.Category.register(Identifier.fromNamespaceAndPath("customhud", "customhud"));
@@ -56,33 +62,54 @@ public class CustomHud implements ModInitializer {
 	public static final KeyMapping kb_refreshProfilerTimings = registerKeyBinding("refresh_profiler_timings", GLFW.GLFW_KEY_UNKNOWN);
 
 	private static KeyMapping registerKeyBinding(String binding, int defaultKey) {
-		return KeyMappingHelper.registerKeyMapping(new KeyMapping("key.custom_hud." + binding, InputConstants.Type.KEYSYM, defaultKey, MAIN_KB_CAT));
+		return new KeyMapping("key.custom_hud." + binding, InputConstants.Type.KEYSYM, defaultKey, MAIN_KB_CAT);
 	}
 
-	@Override
-	public void onInitialize() {
-//		UpdateChecker.check();
+	public CustomHud(IEventBus modEventBus, ModContainer modContainer) {
+		CLIENT = Minecraft.getInstance();
+		modEventBus.addListener(this::registerKeyMappings);
+		modEventBus.addListener(this::registerGuiLayers);
 
-		net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("custom_hud", "hud"), CustomHudRenderer3::render);
+		NeoForge.EVENT_BUS.addListener(this::onClientTick);
+		NeoForge.EVENT_BUS.addListener(this::onLoggingIn);
 
+		modContainer.registerExtensionPoint(IConfigScreenFactory.class, (container, parent) -> new NewConfigScreen(parent));
+	}
 
-		ClientTickEvents.END_CLIENT_TICK.register(CustomHud::onTick);
-		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-			if (UpdateChecker.updateMessage != null)
-				client.gui.chatListener().handleSystemMessage(UpdateChecker.updateMessage, false);
-			EstimatedTick.reset();
+	private void registerKeyMappings(RegisterKeyMappingsEvent event) {
+		event.register(kb_enable);
+		event.register(kb_cycleProfiles);
+		event.register(kb_showErrors);
+		event.register(kb_refreshProfilerTimings);
+	}
 
-			var profile = ProfileManager.getActive();
-			if (profile != null)
-				profile.boolEvents.add("join");
-		});
+	private void registerGuiLayers(RegisterGuiLayersEvent event) {
+		event.registerAboveAll(Identifier.fromNamespaceAndPath("custom_hud", "hud"), (context, deltaTracker) -> CustomHudRenderer3.render(context, deltaTracker));
+	}
 
+	private void onClientTick(ClientTickEvent.Post event) {
+		if (CLIENT == null)
+			CLIENT = Minecraft.getInstance();
+		if (CLIENT != null)
+			onTick(CLIENT);
+	}
 
+	private void onLoggingIn(ClientPlayerNetworkEvent.LoggingIn event) {
+		if (CLIENT == null)
+			CLIENT = Minecraft.getInstance();
+		if (UpdateChecker.updateMessage != null && CLIENT != null)
+			CLIENT.gui.chatListener().handleSystemMessage(UpdateChecker.updateMessage, false);
+		EstimatedTick.reset();
+
+		var profile = ProfileManager.getActive();
+		if (profile != null)
+			profile.boolEvents.add("join");
 	}
 
 	public static void delayedInitialize() {
-		MODMENU_INSTALLED = FabricLoader.getInstance().isModLoaded("modmenu");
-
+		if (CLIENT == null)
+			CLIENT = Minecraft.getInstance();
+		MODMENU_INSTALLED = ModList.get().isLoaded("catalogue") || ModList.get().isLoaded("modmenu");
 
 		ConfigManager.load();
 		updateCrosshairObjectShare();
@@ -91,7 +118,7 @@ public class CustomHud implements ModInitializer {
 
 		try {
 			profileWatcher = FileSystems.getDefault().newWatchService();
-			PROFILE_FOLDER.register(profileWatcher, StandardWatchEventKinds.ENTRY_CREATE,StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE);
+			PROFILE_FOLDER.register(profileWatcher, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE);
 		} catch (IOException e) {
 			CustomHud.LOGGER.catching(e);
 		}
@@ -110,7 +137,6 @@ public class CustomHud implements ModInitializer {
 		}
 	}
 
-
 	private static ComplexData.Enabled previousEnabled = ComplexData.Enabled.DISABLED;
 	private static int saveDelay = -1;
 	private static void onTick(Minecraft client) {
@@ -124,17 +150,13 @@ public class CustomHud implements ModInitializer {
 		updateProfiles();
 		Profile profile = ProfileManager.getActive();
 		if (profile != null && client.getCameraEntity() != null) {
-			if (!Objects.equals(previousEnabled,profile.enabled)) {
+			if (!Objects.equals(previousEnabled, profile.enabled)) {
 				ComplexData.reset();
 				previousEnabled = profile.enabled;
 			}
 			ComplexData.update(profile);
 		}
 
-
-//		while (SWITCH_RENDERER.wasPressed()) {
-//			useNewRenderer = !useNewRenderer;
-//		}
 		while (kb_refreshProfilerTimings.consumeClick()) {
 			ComplexData.refreshTimings = true;
 		}
@@ -162,9 +184,9 @@ public class CustomHud implements ModInitializer {
 		while (kb_showErrors.consumeClick()) {
 			if (client.gui.screen() == null)
 				if (ProfileManager.getActive() != null && Errors.hasErrors(ProfileManager.getActive().name))
-					CLIENT.setScreenAndShow(new ErrorsScreen(null));
+					client.gui.setScreen(new ErrorsScreen(null));
 				else
-					CLIENT.setScreenAndShow(new NewConfigScreen(null));
+					client.gui.setScreen(new NewConfigScreen(null));
 		}
 	}
 
@@ -228,7 +250,7 @@ public class CustomHud implements ModInitializer {
 				}
 			}
 
-            LOGGER.info("Updated Profile {}", fileName);
+			LOGGER.info("Updated Profile {}", fileName);
 			if (!ignoreFirstToast)
 				showToast(fileName);
 			ignoreFirstToast = false;
@@ -261,18 +283,21 @@ public class CustomHud implements ModInitializer {
 		CustomHud.updateCrosshairObjectShare();
 	}
 
+	public static String crosshairStatus = "normal";
 	public static void updateCrosshairObjectShare() {
-		FabricLoader.getInstance().getObjectShare().put("customhud:crosshair",
-				ProfileManager.getActive() == null ? "normal" : ProfileManager.getActive().crosshair.getName());
+		crosshairStatus = ProfileManager.getActive() == null ? "normal" : ProfileManager.getActive().crosshair.getName();
 	}
 
 	public static void showToast(String profileName) {
+		if (CLIENT == null)
+			CLIENT = Minecraft.getInstance();
+		if (CLIENT == null) return;
 		CLIENT.gui.toastManager().addToast(new SystemToast(SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
 				Component.translatable("gui.custom_hud.profile_updated", profileName).withStyle(ChatFormatting.WHITE),
 				Errors.hasErrors(profileName) ?
 						Component.literal("§cFound " + Errors.getErrors(profileName).size() + " errors")
 							.append(CLIENT.gui.screen() instanceof TitleScreen ?
-								Component.literal("§7, view in config screen via modmenu ")
+								Component.literal("§7, view in config screen via mod menu ")
 								: Component.literal("§7, press ")
 									.append(((MutableComponent)kb_showErrors.getTranslatedKeyMessage()).withStyle(ChatFormatting.AQUA))
 									.append("§7 to view"))
@@ -280,6 +305,9 @@ public class CustomHud implements ModInitializer {
 		));
 	}
 	public static void showAllUpdatedToast() {
+		if (CLIENT == null)
+			CLIENT = Minecraft.getInstance();
+		if (CLIENT == null) return;
 		CLIENT.gui.toastManager().addToast(new SystemToast(SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
 				Component.literal("§fAll Profiles Updated"),
 				Component.literal("§aNo errors found")
@@ -290,6 +318,4 @@ public class CustomHud implements ModInitializer {
 		if (DEBUG_MODE)
 			LOGGER.info(msg);
 	}
-
-
 }

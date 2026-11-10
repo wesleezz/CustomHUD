@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.util.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.network.chat.Component;
@@ -124,7 +125,7 @@ public class ProfileManager {
         } catch (IOException e) {
             CustomHud.LOGGER.error("Can't rename profile, IO Exception");
             CustomHud.LOGGER.catching(e);
-            CLIENT.gui.toastManager().addToast(new SystemToast(SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
+            Minecraft.getInstance().gui.toastManager().addToast(new SystemToast(SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
                     Component.literal("§cUnable to Rename Profile"),
                     Component.literal("§eIO Exception")
             ));

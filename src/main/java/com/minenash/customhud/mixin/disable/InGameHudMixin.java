@@ -15,7 +15,7 @@ import static com.minenash.customhud.data.DisableElement.*;
 @Mixin(value = Hud.class, priority = 10000)
 public abstract class InGameHudMixin {
 
-    @Inject(method = "extractHotbarAndDecorations", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "extractHotbar", at = @At("HEAD"), cancellable = true)
     public void customhud$disableHotbar(GuiGraphicsExtractor context, DeltaTracker tickCounter, CallbackInfo ci) {
         if (CustomHud.isDisabled(HOTBAR))
             ci.cancel();
@@ -57,7 +57,7 @@ public abstract class InGameHudMixin {
             ci.cancel();
     }
 
-    @Inject(method = "extractSelectedItemName", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "extractSelectedItemName(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V", at = @At("HEAD"), cancellable = true)
     public void customhud$disableItemTooltip(GuiGraphicsExtractor context, CallbackInfo ci) {
         if (CustomHud.isDisabled(ITEM_TOOLTIP))
             ci.cancel();

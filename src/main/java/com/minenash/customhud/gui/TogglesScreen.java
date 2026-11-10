@@ -5,9 +5,10 @@ import com.minenash.customhud.ProfileManager;
 import com.minenash.customhud.data.Profile;
 import com.minenash.customhud.data.Toggle;
 import com.mojang.blaze3d.platform.InputConstants;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
@@ -55,7 +56,7 @@ public class TogglesScreen extends Screen {
                 .pos(this.width / 2 - 155, this.height - 26).size(150, 20)
                 .tooltip(ProfileManager.openTooltip).build() );
 
-        this.addRenderableWidget( Button.builder(CommonComponents.GUI_DONE, button -> CLIENT.setScreenAndShow(parent))
+        this.addRenderableWidget( Button.builder(CommonComponents.GUI_DONE, button -> onClose())
                 .pos(this.width / 2 - 155 + 160, this.height - 26).size(150, 20).build() );
 
         super.init();
@@ -63,7 +64,11 @@ public class TogglesScreen extends Screen {
 
     @Override
     public void onClose() {
-        CLIENT.setScreenAndShow(parent);
+        if (this.parent != null) {
+            this.minecraft.gui.setScreen(this.parent);
+        } else {
+            this.minecraft.gui.popScreenLayer();
+        }
         ConfigManager.save();
     }
 
@@ -104,7 +109,7 @@ public class TogglesScreen extends Screen {
     class ToggleListWidget extends ContainerObjectSelectionList<ToggleListWidget.TEntry> {
 
         public ToggleListWidget(Profile profile) {
-            super(CLIENT, TogglesScreen.this.width, TogglesScreen.this.height - 36 + 4 - 30, 30, /*TogglesScreen.this.height - 36 + 4,*/ 18);
+            super(Minecraft.getInstance(), TogglesScreen.this.width, TogglesScreen.this.height - 36 + 4 - 30, 30, /*TogglesScreen.this.height - 36 + 4,*/ 18);
 
             boolean noEntries = profile == null || profile.toggles.values().isEmpty();
 
@@ -183,7 +188,7 @@ public class TogglesScreen extends Screen {
             public void extractContent(GuiGraphicsExtractor context, int mouseX, int mouseY, boolean hovered, float tickDelta) {}
         }
 
-        @Environment(EnvType.CLIENT)
+        @OnlyIn(Dist.CLIENT)
         public class ToggleEntry extends TEntry {
             final Toggle toggle;
             final Button modifier;

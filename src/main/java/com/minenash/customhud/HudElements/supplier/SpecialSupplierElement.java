@@ -2,7 +2,6 @@ package com.minenash.customhud.HudElements.supplier;
 
 import com.minenash.customhud.complex.ComplexData;
 import com.minenash.customhud.HudElements.interfaces.HudElement;
-import net.fabricmc.fabric.api.client.renderer.v1.Renderer;
 import net.minecraft.client.CloudStatus;
 import net.minecraft.client.GraphicsPreset;
 import net.minecraft.client.Minecraft;
@@ -96,11 +95,9 @@ public class SpecialSupplierElement implements HudElement {
             () -> isFacingEastOrSouth() ? 1 : 0,
             SpecialSupplierElement::isFacingEastOrSouth);
 
-    public static final Entry ACTIVE_RENDERER = of( () -> {var r = renderer(); return r != null ? r.getClass().getSimpleName() : "none (vanilla)";},
-                                                    () -> {var r = renderer(); return r != null ? r.getClass().getSimpleName().length() : 7;},
-                                                    () -> renderer() != null);
-
-    public static Renderer renderer() { try {return Renderer.get();} catch (Exception e) { return null;}}
+    public static final Entry ACTIVE_RENDERER = of( () -> "none (vanilla)",
+                                                    () -> 7,
+                                                    () -> false);
 
     public static final Entry CAMERA_PERSPECTIVE = of (
             () -> switch (client.options.getCameraType()) {

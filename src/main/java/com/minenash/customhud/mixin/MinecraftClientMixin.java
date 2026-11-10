@@ -45,6 +45,7 @@ public abstract class MinecraftClientMixin {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     public void init(GameConfig args, CallbackInfo ci) {
+        CustomHud.CLIENT = (Minecraft)(Object)this;
         CustomHud.delayedInitialize();
     }
 

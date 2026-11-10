@@ -80,10 +80,6 @@ public class NewConfigScreen extends Screen {
         this.addRenderableWidget( Button.builder( Component.literal("Wiki / Docs"),
                 button -> Util.getPlatform().openUri("https://customhud.dev/v3/getting_started"))
                 .pos(width - 68 - 4 - 68 - 4, 6).size(68, 16).build() );
-
-
-        this.addRenderableWidget( Button.builder(CommonComponents.GUI_DONE, button -> onClose())
-                .pos(this.width / 2 - 155 + 160, this.height - 26).size(150, 20).build() );
     }
 
     private static final Style ICONS = Style.EMPTY.withFont(new FontDescription.Resource(Identifier.fromNamespaceAndPath("custom_hud", "icons")));
@@ -128,7 +124,7 @@ public class NewConfigScreen extends Screen {
             return true;
         }
         if (input.key() == CustomHud.kb_showErrors.key.getValue() && ProfileManager.getActive() != null) {
-            minecraft.setScreenAndShow( new ErrorsScreen(this) );
+            this.minecraft.gui.setScreen( new ErrorsScreen(this) );
             return true;
         }
 
@@ -212,7 +208,11 @@ public class NewConfigScreen extends Screen {
 
     @Override
     public void onClose() {
-        CLIENT.setScreenAndShow(parent);
+        if (this.parent != null) {
+            this.minecraft.gui.setScreen(this.parent);
+        } else {
+            this.minecraft.gui.popScreenLayer();
+        }
         profiles.update();
         ConfigManager.save();
     }

@@ -9,6 +9,7 @@ import com.minenash.customhud.gui.TogglesScreen;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -55,13 +56,13 @@ public class ProfileLineEntry extends LineEntry {
         });
         int errors = Errors.getErrors(profile.name).size();
         int toggles = profile.toggles.size();
-        this.error = button("§c!", "§c" + (errors == 1 ? "1 Error Found" : errors + " Errors Found") , 16, (b) -> CLIENT.setScreenAndShow(new ErrorsScreen(widget.screen, profile)));
-        this.toggles = button("Toggles", toggles == 1 ? "1 Toggle in the profile" : toggles + " Toggles in the profile",48, (b) -> CLIENT.setScreenAndShow(new TogglesScreen(widget.screen, profile)));
+        this.error = button("§c!", "§c" + (errors == 1 ? "1 Error Found" : errors + " Errors Found") , 16, (b) -> Minecraft.getInstance().gui.setScreen(new ErrorsScreen(widget.screen, profile)));
+        this.toggles = button("Toggles", toggles == 1 ? "1 Toggle in the profile" : toggles + " Toggles in the profile",48, (b) -> Minecraft.getInstance().gui.setScreen(new TogglesScreen(widget.screen, profile)));
         this.delete = button("§cDelete", "§cThis Can't Be §nUndone!!!!", 48, (b) -> widget.deleteProfile(this));
         this.up = button("§a↑", 16, b -> widget.move(this, -1));
         this.down = button("§c↓", 16, b -> widget.move(this, 1));
 
-        this.editName = new EditBox(CLIENT.font, 0, 0, 200, 16, Component.literal("Edit Name"));
+        this.editName = new EditBox(Minecraft.getInstance().font, 0, 0, 200, 16, Component.literal("Edit Name"));
         this.editName.setValue(profile.name);
         this.editName.setTooltip(Tooltip.create(Component.literal("Click to edit name")));
         this.editName.setCanLoseFocus(true);
@@ -101,7 +102,7 @@ public class ProfileLineEntry extends LineEntry {
                 ProfileManager.rename(profile, editName.getValue());
                 displayName = profile.name;
             }
-            context.text(CLIENT.font, truncateName(x, eWidth), x + 16 + 20 + 4, y + 4, 0xFFFFFFFF);
+            context.text(Minecraft.getInstance().font, truncateName(x, eWidth), x + 16 + 20 + 4, y + 4, 0xFFFFFFFF);
         }
 
         selected.setMessage(Component.literal(ProfileManager.getActive() == profile ? "☑" : "☐"));
@@ -135,7 +136,7 @@ public class ProfileLineEntry extends LineEntry {
 
     private String truncateName(int x, int eWidth) {
         String name = displayName;
-        int width = CLIENT.font.width(name);
+        int width = Minecraft.getInstance().font.width(name);
         int maxWidth = x + eWidth + switch (widget.screen.mode) {
             case NORMAL ->  -16-42-82-18-(profile.toggles.isEmpty() ? 0 : 50);
             case REORDER -> -16-18-18;
@@ -144,11 +145,11 @@ public class ProfileLineEntry extends LineEntry {
         if (maxWidth > width)
             return name;
 
-        maxWidth -= CLIENT.font.width("…") + 2;
+        maxWidth -= Minecraft.getInstance().font.width("…") + 2;
 
         while(width > maxWidth) {
             name = name.substring(0, name.length() - 1);
-            width = CLIENT.font.width(name);
+            width = Minecraft.getInstance().font.width(name);
         }
         return name + "…";
     }

@@ -4,10 +4,11 @@ import com.minenash.customhud.ProfileManager;
 import com.minenash.customhud.data.Profile;
 import com.minenash.customhud.errors.ErrorType;
 import com.minenash.customhud.errors.Errors;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import net.minecraft.ChatFormatting;
 import net.minecraft.util.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.Button;
@@ -69,10 +70,10 @@ public class ErrorsScreen extends Screen {
                     .pos(this.width / 2 - 155, this.height - 26).size(100, 20)
                     .tooltip(ProfileManager.openTooltip).build() );
 
-            this.addRenderableWidget( Button.builder(Component.literal("Profiles"), button -> CLIENT.setScreenAndShow( new NewConfigScreen(null) ))
+            this.addRenderableWidget( Button.builder(Component.literal("Profiles"), button -> this.minecraft.gui.setScreen( new NewConfigScreen(null) ))
                     .pos(this.width / 2 - 155 + 100 + 5, this.height - 26).size(100, 20).build() );
 
-            this.addRenderableWidget( Button.builder(CommonComponents.GUI_DONE, button -> CLIENT.setScreenAndShow(parent))
+            this.addRenderableWidget( Button.builder(CommonComponents.GUI_DONE, button -> onClose())
                     .pos(this.width / 2 - 155 + 160 + 50, this.height - 26).size(100, 20).build() );
         }
         else {
@@ -81,7 +82,7 @@ public class ErrorsScreen extends Screen {
                     .tooltip(ProfileManager.openTooltip).build() );
 
 
-            this.addRenderableWidget( Button.builder(CommonComponents.GUI_DONE, button -> CLIENT.setScreenAndShow(parent))
+            this.addRenderableWidget( Button.builder(CommonComponents.GUI_DONE, button -> onClose())
                     .pos(this.width / 2 - 155 + 160, this.height - 26).size(150, 20).build() );
         }
 
@@ -91,7 +92,11 @@ public class ErrorsScreen extends Screen {
 
     @Override
     public void onClose() {
-        CLIENT.setScreenAndShow(parent);
+        if (this.parent != null) {
+            this.minecraft.gui.setScreen(this.parent);
+        } else {
+            this.minecraft.gui.popScreenLayer();
+        }
     }
 
     @Override
@@ -109,7 +114,7 @@ public class ErrorsScreen extends Screen {
     class ErrorListWidget extends AbstractSelectionList<ErrorListWidget.ErrorEntry> {
 
         public ErrorListWidget(Profile profile) {
-            super(CLIENT, ErrorsScreen.this.width, ErrorsScreen.this.height - 30 - 32, 30, /*ErrorsScreen.this.height - 36 + 4,*/ 18);
+            super(Minecraft.getInstance(), ErrorsScreen.this.width, ErrorsScreen.this.height - 30 - 32, 30, /*ErrorsScreen.this.height - 36 + 4,*/ 18);
             this.addEntry( new ErrorEntryHeader() );
 
             if (profile == null) {
@@ -157,7 +162,7 @@ public class ErrorsScreen extends Screen {
             }
         }
 
-        @Environment(EnvType.CLIENT)
+        @OnlyIn(Dist.CLIENT)
         public class ErrorEntry extends AbstractSelectionList.Entry<ErrorEntry> {
             final Errors.Error error;
             final String collapsedSource;

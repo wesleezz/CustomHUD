@@ -2,7 +2,6 @@ package com.minenash.customhud;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.ClickEvent;
@@ -19,8 +18,8 @@ public class UpdateChecker {
     private static final String mcVersion = Minecraft.getInstance().getLaunchedVersion();
     private static final String currentVersion;
     static {
-        String modVersionRaw = FabricLoader.getInstance().getModContainer("custom_hud").get().getMetadata().getVersion().getFriendlyString();
-        currentVersion = modVersionRaw.substring(0, modVersionRaw.indexOf("+"));
+        String modVersionRaw = net.neoforged.fml.ModList.get().getModContainerById("custom_hud").map(c -> c.getModInfo().getVersion().toString()).orElse("4.1.4+26.2");
+        currentVersion = modVersionRaw.contains("+") ? modVersionRaw.substring(0, modVersionRaw.indexOf("+")) : modVersionRaw;
     }
 
     public static String[] latestKnownVersion = null;

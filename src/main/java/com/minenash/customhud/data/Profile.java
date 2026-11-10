@@ -8,7 +8,7 @@ import com.minenash.customhud.conditionals.ExpressionParser;
 import com.minenash.customhud.conditionals.Operation;
 import com.minenash.customhud.errors.ErrorType;
 import com.minenash.customhud.errors.Errors;
-import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.fml.loading.FMLPaths;
 import net.minecraft.client.KeyMapping;
 import org.lwjgl.glfw.GLFW;
 
@@ -112,7 +112,7 @@ public class Profile {
             dateTime = Files.getLastModifiedTime(path);
         } catch (IOException e) {
             CustomHud.LOGGER.catching(e);;
-            Errors.addError(profileName, "N/A", path.relativize(FabricLoader.getInstance().getGameDir().getParent()).toString(), ErrorType.IO, e.getMessage());
+            Errors.addError(profileName, "N/A", path.relativize(FMLPaths.GAMEDIR.get().getParent()).toString(), ErrorType.IO, e.getMessage());
             return null;
         }
 

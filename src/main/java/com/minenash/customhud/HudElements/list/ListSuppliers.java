@@ -60,7 +60,7 @@ public class ListSuppliers {
                     .thenComparing((entry) -> entry.getProfile().name(), String::compareToIgnoreCase);
 
 
-    public static final List<String> IGNORE_MODS = List.of("minecraft", "fabricloader", "java");
+    public static final List<String> IGNORE_MODS = List.of("minecraft", "neoforge", "java");
     public static final Comparator<?> MOD_ORDERING = Comparator.comparing(mod -> ((Mod) mod).getTranslatedName().toLowerCase(Locale.ROOT));
     public static final Predicate<?> MOD_PREDICATE = (mod) -> !(((Mod) mod).isHidden() || ((Mod) mod).getBadges().contains(Mod.Badge.LIBRARY) || ((Mod) mod).getBadges().contains(Mod.Badge.MINECRAFT));
     public static final Predicate<?> ALL_ROOT_MODS_PREDICATE = (mod) -> !(((Mod) mod).isHidden() || IGNORE_MODS.contains(((Mod) mod).getId()));

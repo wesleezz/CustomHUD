@@ -28,7 +28,7 @@ import com.minenash.customhud.registry.CustomHudRegistry;
 import com.minenash.customhud.registry.ParseContext;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.terraformersmc.modmenu.ModMenu;
-import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.fml.ModList;
 import net.minecraft.IdentifierException;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -806,7 +806,7 @@ public class VariableParser {
 
         if (part.startsWith("mod_loaded:")) {
             String modid = part.substring(11);
-            return new SudoElements.Bool(  FabricLoader.getInstance().isModLoaded(modid) );
+            return new SudoElements.Bool(  ModList.get().isLoaded(modid) );
         }
 
         switch (part) {
